@@ -2,6 +2,7 @@ package com.fmd.spring_jpa_demo.controller;
 
 import com.fmd.spring_jpa_demo.dto.StudentDTO;
 import com.fmd.spring_jpa_demo.service.StudentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,7 +28,7 @@ public class StudentController {
      * @return the saved student DTO
      */
     @PostMapping("/student")
-    public StudentDTO saveStudent(@RequestBody StudentDTO studentDTO) {
+    public StudentDTO saveStudent(@Valid @RequestBody StudentDTO studentDTO) {
         log.info("Saving Student : {}", studentDTO);
         var saved = studentService.saveStudent(studentDTO);
         log.info("Student saved: {}", saved);
@@ -86,7 +87,7 @@ public class StudentController {
      * @return the updated student DTO or 404 if not found
      */
     @PutMapping("/student/{id}")
-    public ResponseEntity<StudentDTO> updateStudent(@RequestBody StudentDTO studentDTO,
+    public ResponseEntity<StudentDTO> updateStudent(@Valid @RequestBody StudentDTO studentDTO,
                                                     @PathVariable int id) {
 
         log.info("Update student by ID : {}", id);
