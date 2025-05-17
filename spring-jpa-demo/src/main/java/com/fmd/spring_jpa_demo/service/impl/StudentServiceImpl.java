@@ -2,6 +2,7 @@ package com.fmd.spring_jpa_demo.service.impl;
 
 import com.fmd.spring_jpa_demo.builder.StudentBuilder;
 import com.fmd.spring_jpa_demo.dto.StudentDTO;
+import com.fmd.spring_jpa_demo.exception.StudentNotFoundException;
 import com.fmd.spring_jpa_demo.repository.StudentRepository;
 import com.fmd.spring_jpa_demo.service.StudentService;
 import lombok.RequiredArgsConstructor;
@@ -57,12 +58,10 @@ public class StudentServiceImpl implements StudentService {
      */
     public Optional<StudentDTO> getStudentById(int id) {
         log.info("Fetching student by ID: {}", id);
-        return studentRepository.findById(id)
-                .map(StudentBuilder::toDTO)
-                .map(dto -> {
-                    log.info("Student found for ID: {}", id);
-                    return dto;
-                });
+        var student = studentRepository.findById(id)
+            .orElseThrow(() -> new StudentNotFoundException(id));
+        log.info("Student found for ID: {}", id);
+        return Optional.of(StudentBuilder.toDTO(student));
     }
 
     /**
@@ -74,7 +73,8 @@ public class StudentServiceImpl implements StudentService {
      */
     public StudentDTO updateStudent(int id, StudentDTO studentDTO) {
         log.info("Updating student with ID: {}", id);
-        var student = studentRepository.findById(id).orElseThrow();
+        var student = studentRepository.findById(id)
+            .orElseThrow(() -> new StudentNotFoundException(id));
         log.debug("Student from DB: {}", student);
 
         student.setFirstName(studentDTO.firstName());
@@ -105,10 +105,9 @@ public class StudentServiceImpl implements StudentService {
      */
     public void deleteStudent(int id) {
         log.info("Deleting student with ID: {}", id);
-        studentRepository.findById(id)
-                .ifPresentOrElse(student -> {
-                    studentRepository.delete(student);
-                    log.info("Student deleted with ID: {}", id);
-                }, () -> log.warn("No student found for ID: {} to delete", id));
+        var student = studentRepository.findById(id)
+            .orElseThrow(() -> new StudentNotFoundException(id));
+        studentRepository.delete(student);
+        log.info("Student deleted with ID: {}", id);
     }
 }

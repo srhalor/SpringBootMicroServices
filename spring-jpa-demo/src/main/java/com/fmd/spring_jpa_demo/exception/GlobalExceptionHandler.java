@@ -56,6 +56,20 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles StudentNotFoundException and returns a 404 error response with a custom message.
+     *
+     * @param ex      the exception
+     * @param request the web request
+     * @return ResponseEntity with ApiError and 404 status
+     */
+    @ExceptionHandler(StudentNotFoundException.class)
+    public ResponseEntity<ApiError> handleStudentNotFound(StudentNotFoundException ex, WebRequest request) {
+        log.warn("Student not found: {} | Path: {}", ex.getMessage(), request.getDescription(false));
+        ApiError error = new ApiError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+    /**
      * Handles all other exceptions and returns a 500 error response.
      *
      * @param ex      the exception

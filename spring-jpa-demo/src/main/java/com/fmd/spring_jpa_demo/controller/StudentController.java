@@ -1,6 +1,7 @@
 package com.fmd.spring_jpa_demo.controller;
 
 import com.fmd.spring_jpa_demo.dto.StudentDTO;
+import com.fmd.spring_jpa_demo.exception.StudentNotFoundException;
 import com.fmd.spring_jpa_demo.service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -68,15 +69,12 @@ public class StudentController {
      */
     @GetMapping("/student/{id}")
     public ResponseEntity<StudentDTO> getStudentById(@PathVariable int id) {
-
         log.info("Find student by ID : {}", id);
-        var studentDTO = studentService.getStudentById(id);
-        if (studentDTO.isPresent()) {
-            log.info("Student found for ID: {}", id);
-        } else {
-            log.warn("No student found for ID: {}", id);
-        }
-        return studentDTO.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        // Let StudentNotFoundException propagate to GlobalExceptionHandler
+        var studentDTO = studentService.getStudentById(id)
+                .orElseThrow(() -> new StudentNotFoundException(id));
+        log.info("Student found for ID: {}", id);
+        return ResponseEntity.ok(studentDTO);
     }
 
     /**
@@ -89,17 +87,10 @@ public class StudentController {
     @PutMapping("/student/{id}")
     public ResponseEntity<StudentDTO> updateStudent(@Valid @RequestBody StudentDTO studentDTO,
                                                     @PathVariable int id) {
-
         log.info("Update student by ID : {}", id);
-        try {
-            var updatedStudentDTO = studentService.updateStudent(id, studentDTO);
-            log.info("Student updated: {}", updatedStudentDTO);
-            return ResponseEntity.ok(updatedStudentDTO);
-        } catch (Exception e) {
-            log.error("Error updating student with ID {}: {}", id, e.getMessage(), e);
-            return ResponseEntity.notFound().build();
-        }
-
+        var updatedStudentDTO = studentService.updateStudent(id, studentDTO);
+        log.info("Student updated: {}", updatedStudentDTO);
+        return ResponseEntity.ok(updatedStudentDTO);
     }
 
     /**
@@ -110,15 +101,10 @@ public class StudentController {
      */
     @DeleteMapping("/student/{id}")
     public ResponseEntity<Void> deleteStudentById(@PathVariable int id) {
-
         log.info("Delete student by ID : {}", id);
-        try {
-            studentService.deleteStudent(id);
-            log.info("Student deleted with ID: {}", id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            log.error("Error deleting student with ID {}: {}", id, e.getMessage(), e);
-            return ResponseEntity.notFound().build();
-        }
+        // Let StudentNotFoundException propagate to GlobalExceptionHandler
+        studentService.deleteStudent(id);
+        log.info("Student deleted with ID: {}", id);
+        return ResponseEntity.noContent().build();
     }
 }
