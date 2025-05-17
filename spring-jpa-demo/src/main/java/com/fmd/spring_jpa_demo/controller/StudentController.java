@@ -1,4 +1,4 @@
-package com.fmd.spring_jpa_demo;
+package com.fmd.spring_jpa_demo.controller;
 
 import com.fmd.spring_jpa_demo.dto.StudentDTO;
 import com.fmd.spring_jpa_demo.service.StudentService;
