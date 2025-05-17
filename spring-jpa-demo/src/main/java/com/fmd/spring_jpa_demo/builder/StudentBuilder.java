@@ -2,16 +2,23 @@ package com.fmd.spring_jpa_demo.builder;
 
 import com.fmd.spring_jpa_demo.dto.AddressDTO;
 import com.fmd.spring_jpa_demo.dto.StudentDTO;
-import com.fmd.spring_jpa_demo.entity.Address;
 import com.fmd.spring_jpa_demo.entity.Student;
 import lombok.experimental.UtilityClass;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Utility class for building Student and StudentDTO objects.
+ */
 @UtilityClass
 public class StudentBuilder {
 
+    /**
+     * Converts a StudentDTO to a Student entity.
+     * @param studentDTO the student DTO
+     * @return the Student entity
+     */
     public static Student toEntity(StudentDTO studentDTO) {
 
         Student student = Student.builder()
@@ -27,6 +34,11 @@ public class StudentBuilder {
         return student;
     }
 
+    /**
+     * Converts a list of Student entities to a list of StudentDTOs.
+     * @param studentList the list of Student entities
+     * @return the list of StudentDTOs
+     */
     public static List<StudentDTO> toDTO(List<Student> studentList) {
 
         return studentList.stream()
@@ -34,6 +46,11 @@ public class StudentBuilder {
                 .toList();
     }
 
+    /**
+     * Converts a Student entity to a StudentDTO.
+     * @param student the Student entity
+     * @return the StudentDTO
+     */
     public static StudentDTO toDTO(Student student) {
 
         List<AddressDTO> addressDTOList = AddressBuilder.toDTO(student.getAddressList());

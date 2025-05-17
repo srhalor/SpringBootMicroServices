@@ -6,6 +6,9 @@ import lombok.Builder;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Data transfer object for Student entity.
+ */
 @Builder
 public record StudentDTO(
         int id,
