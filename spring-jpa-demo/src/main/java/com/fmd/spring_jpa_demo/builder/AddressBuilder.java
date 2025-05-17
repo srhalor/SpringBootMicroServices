@@ -14,6 +14,7 @@ public class AddressBuilder {
 
     /**
      * Converts an AddressDTO to an Address entity.
+     *
      * @param addressDTO the address DTO
      * @return the Address entity
      */
@@ -27,6 +28,7 @@ public class AddressBuilder {
 
     /**
      * Converts a list of Address entities to a list of AddressDTOs.
+     *
      * @param addressList the list of Address entities
      * @return the list of AddressDTOs
      */
@@ -38,6 +40,7 @@ public class AddressBuilder {
 
     /**
      * Converts an Address entity to an AddressDTO.
+     *
      * @param address the Address entity
      * @return the AddressDTO
      */
@@ -52,4 +55,3 @@ public class AddressBuilder {
                 .build();
     }
 }
-

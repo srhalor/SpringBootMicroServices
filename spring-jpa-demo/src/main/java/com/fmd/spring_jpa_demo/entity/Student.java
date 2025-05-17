@@ -39,6 +39,7 @@ public class Student extends Base {
 
     /**
      * Adds an address to the student's address list.
+     *
      * @param address the address to add
      */
     public void addAddress(Address address) {

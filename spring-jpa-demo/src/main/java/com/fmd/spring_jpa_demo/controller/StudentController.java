@@ -10,8 +10,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
-
 /**
  * REST controller for managing Student resources.
  */
@@ -24,22 +22,24 @@ public class StudentController {
 
     /**
      * Creates a new student.
+     *
      * @param studentDTO the student data transfer object
      * @return the saved student DTO
      */
     @PostMapping("/student")
     public StudentDTO saveStudent(@RequestBody StudentDTO studentDTO) {
         log.info("Saving Student : {}", studentDTO);
-        StudentDTO saved = studentService.saveStudent(studentDTO);
+        var saved = studentService.saveStudent(studentDTO);
         log.info("Student saved: {}", saved);
         return saved;
     }
 
     /**
      * Retrieves all students with pagination and sorting.
-     * @param offset the page offset
-     * @param pageSize the page size
-     * @param sortBy the field to sort by
+     *
+     * @param offset    the page offset
+     * @param pageSize  the page size
+     * @param sortBy    the field to sort by
      * @param direction the sort direction
      * @return a page of student DTOs
      */
@@ -54,13 +54,14 @@ public class StudentController {
                 "sort by [{}] with direction [{}]", offset, pageSize, sortBy, direction);
 
         var sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
-        Page<StudentDTO> page = studentService.getAllStudent(PageRequest.of(offset, pageSize, sort));
+        var page = studentService.getAllStudent(PageRequest.of(offset, pageSize, sort));
         log.debug("Fetched {} students", page.getTotalElements());
         return page;
     }
 
     /**
      * Retrieves a student by ID.
+     *
      * @param id the student ID
      * @return the student DTO or 404 if not found
      */
@@ -68,7 +69,7 @@ public class StudentController {
     public ResponseEntity<StudentDTO> getStudentById(@PathVariable int id) {
 
         log.info("Find student by ID : {}", id);
-        Optional<StudentDTO> studentDTO = studentService.getStudentById(id);
+        var studentDTO = studentService.getStudentById(id);
         if (studentDTO.isPresent()) {
             log.info("Student found for ID: {}", id);
         } else {
@@ -79,8 +80,9 @@ public class StudentController {
 
     /**
      * Updates a student by ID.
+     *
      * @param studentDTO the student data transfer object
-     * @param id the student ID
+     * @param id         the student ID
      * @return the updated student DTO or 404 if not found
      */
     @PutMapping("/student/{id}")
@@ -89,7 +91,7 @@ public class StudentController {
 
         log.info("Update student by ID : {}", id);
         try {
-            StudentDTO updatedStudentDTO = studentService.updateStudent(id, studentDTO);
+            var updatedStudentDTO = studentService.updateStudent(id, studentDTO);
             log.info("Student updated: {}", updatedStudentDTO);
             return ResponseEntity.ok(updatedStudentDTO);
         } catch (Exception e) {
@@ -101,6 +103,7 @@ public class StudentController {
 
     /**
      * Deletes a student by ID.
+     *
      * @param id the student ID
      * @return 204 if deleted, 404 if not found
      */
