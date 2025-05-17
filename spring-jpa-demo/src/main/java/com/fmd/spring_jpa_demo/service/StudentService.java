@@ -44,9 +44,8 @@ public class StudentService {
      */
     public Page<StudentDTO> getAllStudent(PageRequest pageRequest) {
         log.info("Fetching all students with page request: {}", pageRequest);
-        var studentPage = studentRepository.findAll(pageRequest);
-        log.debug("Fetched {} students", studentPage.getTotalElements());
-        return studentPage.map(StudentBuilder::toDTO);
+        return studentRepository.findAll(pageRequest)
+                .map(StudentBuilder::toDTO);
     }
 
     /**
@@ -57,13 +56,12 @@ public class StudentService {
      */
     public Optional<StudentDTO> getStudentById(int id) {
         log.info("Fetching student by ID: {}", id);
-        var result = studentRepository.findById(id).map(StudentBuilder::toDTO);
-        if (result.isPresent()) {
-            log.info("Student found for ID: {}", id);
-        } else {
-            log.warn("No student found for ID: {}", id);
-        }
-        return result;
+        return studentRepository.findById(id)
+                .map(StudentBuilder::toDTO)
+                .map(dto -> {
+                    log.info("Student found for ID: {}", id);
+                    return dto;
+                });
     }
 
     /**
@@ -81,16 +79,17 @@ public class StudentService {
         student.setFirstName(studentDTO.firstName());
         student.setLastName(studentDTO.lastName());
 
-        for (var address : student.getAddressList()) {
-            for (var addressDTO : studentDTO.addressDTOList()) {
-                if (address.getId() == addressDTO.id()) {
+        student.getAddressList().forEach(address ->
+            studentDTO.addressDTOList().stream()
+                .filter(addressDTO -> address.getId() == addressDTO.id())
+                .findFirst()
+                .ifPresent(addressDTO -> {
                     log.debug("Updating address with ID: {} for student ID: {}", address.getId(), id);
                     address.setArea(addressDTO.area());
                     address.setCity(addressDTO.city());
                     address.setZipcode(addressDTO.zipcode());
-                }
-            }
-        }
+                })
+        );
 
         log.info("Student after update: {}", student);
         var updatedStudent = studentRepository.save(student);
@@ -105,8 +104,10 @@ public class StudentService {
      */
     public void deleteStudent(int id) {
         log.info("Deleting student with ID: {}", id);
-        var student = studentRepository.findById(id).orElseThrow();
-        studentRepository.delete(student);
-        log.info("Student deleted with ID: {}", id);
+        studentRepository.findById(id)
+                .ifPresentOrElse(student -> {
+                    studentRepository.delete(student);
+                    log.info("Student deleted with ID: {}", id);
+                }, () -> log.warn("No student found for ID: {} to delete", id));
     }
 }

@@ -27,9 +27,9 @@ public class StudentBuilder {
                 .addressList(new ArrayList<>())
                 .build();
 
-        for (var addressDTO : studentDTO.addressDTOList()) {
-            student.addAddress(AddressBuilder.toEntity(addressDTO));
-        }
+        studentDTO.addressDTOList().stream()
+                .map(AddressBuilder::toEntity)
+                .forEach(student::addAddress);
 
         return student;
     }
