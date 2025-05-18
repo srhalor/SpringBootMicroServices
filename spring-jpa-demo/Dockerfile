@@ -1,5 +1,5 @@
 # Use Amazon Corretto JDK 21 (Alpine) as the base image
-FROM amazoncorretto:21-alpine
+FROM amazoncorretto:21-alpine3.21-jdk
 
 # Set a non-root user and group
 RUN addgroup -S spring && adduser -S spring -G spring

@@ -1,0 +1,21 @@
+image:
+  repository: srhalor/spring-jpa-demo
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+  actuatorPort: 8081
+
+env:
+  SPRING_DATASOURCE_URL: jdbc:h2:mem:mydb
+  SPRING_DATASOURCE_USERNAME: sa
+  SPRING_DATASOURCE_PASSWORD: password
+  SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.h2.Driver
+  SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.H2Dialect
+  SPRING_JPA_SHOW_SQL: "true"
+  SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+  SPRING_H2_CONSOLE_ENABLED: "true"
+  SPRING_H2_CONSOLE_SETTINGS_WEB_ALLOW_OTHERS: "true"
+
