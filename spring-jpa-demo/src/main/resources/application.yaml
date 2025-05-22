@@ -30,3 +30,7 @@ management:
       probes:
         enabled: true
 
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.fmd.spring_jpa_demo: TRACE
