@@ -5,10 +5,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.util.Base64;
-import java.util.Optional;
 
 /**
  * Utility class for handling JWT operations such as extracting username, validating tokens,
@@ -18,56 +18,51 @@ import java.util.Optional;
 @UtilityClass
 public class JwtUtil {
 
-    /**
-     * Extracts the username (subject) from the JWT token.
-     *
-     * @param token the JWT token
-     * @return the username (subject) or null if not found
-     */
-    public String extractUsername(String token) {
-        log.debug("Extracting username from token");
-        // Extract the username (subject) from the JWT payload if present
-        return Optional.ofNullable(token)
-                .map(JwtUtil::extractPayload)
-                .map(JwtPayload::subject)
-                .orElse(null);
-    }
-
-    /**
-     * Validates the JWT token by checking its expiration.
-     *
-     * @param token the JWT token
-     * @return true if the token is valid, false otherwise
-     */
-    public boolean isTokenValid(String token) {
-        log.debug("Validating token");
-        // Validate the token by checking if the expiration date is after the current date
-        return Optional.ofNullable(token)
-                .map(JwtUtil::extractPayload)
-                .map(JwtPayload::expiration)
-                .map(exp -> exp.isAfter(Instant.now()))
-                .orElse(false);
-    }
 
     /**
      * Extracts the payload from the JWT token and parses it into a JwtPayload object.
      *
      * @param token the JWT token
-     * @return the parsed JwtPayload
+     * @return the parsed JwtPayload object
      * @throws IllegalArgumentException if the token is invalid
      */
-    private JwtPayload extractPayload(String token) {
-        log.debug("Extracting payload from token");
-        // Split the token, decode the payload, and parse it into a JwtPayload object
-        return Optional.ofNullable(token)
-                .map(t -> t.split("\\."))
-                .filter(parts -> parts.length == 3)
-                .map(parts -> parts[1])
-                .map(Base64.getUrlDecoder()::decode)
-                .map(String::new)
-                .map(JwtUtil::parsePayload)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid JWT token"));
+    public JwtPayload validateAndExtractPayload(String token) {
+        log.debug("Validating and extracting JWT payload");
 
+        log.trace("Null and empty check for JWT token");
+        // Check if the token is null or empty
+        if (!StringUtils.hasText(token)) {
+            log.warn("JWT token is null or empty");
+            throw new JwtParseException("JWT token is null or empty");
+        }
+
+        log.trace("Token starts with 'Bearer ' check");
+        // Check if the token starts with "Bearer "
+        if (!token.startsWith("Bearer ")) {
+            log.warn("JWT token does not start with 'Bearer '");
+            throw new JwtParseException("JWT token does not start with 'Bearer '");
+        }
+
+        log.trace("Checking if token has 3 parts");
+        // Split the token into parts
+        var parts = token.split("\\.");
+        // Check if the token has 3 parts
+        if (parts.length != 3) {
+            log.warn("JWT token does not have 3 parts");
+            throw new JwtParseException("JWT token does not have 3 parts");
+        }
+
+        log.trace("Decoding payload part of JWT token");
+        // Decode the payloadPart part of the JWT token
+        var payloadPart = new String(Base64.getUrlDecoder().decode(parts[1]));
+
+        // parse the payload part into a JwtPayload object
+        var jwtPayload = parsePayload(payloadPart);
+
+        // Validate the JWT payload, throws an exception if invalid
+        validatePayload(jwtPayload);
+
+        return jwtPayload;
     }
 
     /**
@@ -78,8 +73,9 @@ public class JwtUtil {
      * @throws JwtParseException if parsing fails
      */
     private JwtPayload parsePayload(String payloadString) {
+
+        log.debug("Parsing JWT payload");
         try {
-            log.debug("Parsing JWT payload");
 
             // Create an ObjectMapper instance for JSON parsing
             ObjectMapper mapper = new ObjectMapper();
@@ -97,5 +93,41 @@ public class JwtUtil {
             log.error("Failed to parse JWT payload", e);
             throw new JwtParseException("Failed to parse JWT payload", e);
         }
+    }
+
+    /**
+     * validate subject and expiration date.
+     *
+     * @param jwtPayload the JWT payload to validate
+     */
+    private void validatePayload(JwtPayload jwtPayload) {
+
+        // Check if the JWT payload is null
+        if (jwtPayload == null) {
+            log.warn("JWT payload is null");
+            throw new JwtValidationException("JWT payload is null");
+        }
+
+        log.trace("Validating token expiration" );
+        // Check if the JWT payload has a valid expiration date
+        if (jwtPayload.expiration() == null) {
+            log.warn("JWT payload expiration date is null");
+            throw new JwtValidationException("JWT payload expiration date is null");
+        }
+
+        // Check if the JWT payload has expired
+        if (jwtPayload.expiration().isBefore(Instant.now())) {
+            log.warn("JWT token has expired");
+            throw new JwtValidationException("JWT token has expired");
+        }
+
+        log.trace("Validating token subject");
+        // Check if the JWT payload has a valid subject
+        if (!StringUtils.hasText(jwtPayload.subject())) {
+            log.warn("JWT payload subject is null or empty");
+            throw new JwtValidationException("JWT payload subject is null or empty");
+        }
+
+        log.info("JWT token is valid for user: {}", jwtPayload.subject());
     }
 }

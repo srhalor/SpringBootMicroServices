@@ -13,4 +13,13 @@ public class JwtParseException extends RuntimeException {
     public JwtParseException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    /**
+     * Constructs a new JwtParseException with the specified detail message.
+     *
+     * @param message the detail message
+     */
+    public JwtParseException(String message) {
+        super(message);
+    }
 }

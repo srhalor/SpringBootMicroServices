@@ -8,15 +8,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
 
 /**
  * Filter for JWT authentication. Extracts and validates JWT from the Authorization header,
@@ -44,39 +43,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.debug("Processing JWT authentication filter");
 
         // Retrieve the Authorization header from the request
-        String authHeader = request.getHeader("Authorization");
+        var authHeader = request.getHeader("Authorization");
 
-        // Check for null or empty Authorization header
-        if (!StringUtils.hasText(authHeader)) {
-            log.warn("Authorization header is null or empty");
-            filterChain.doFilter(request, response);
-            return;
-        }
+        // Validate and extract the JWT payload from the Authorization header
+        var jwtPayload = JwtUtil.validateAndExtractPayload(authHeader);
 
-        // Extract token and username from Authorization header
-        String token = null;
-        String username = null;
+        // If subject is present, authentication is not already set, and token is valid, set authentication
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            log.debug("JWT token is valid, setting authentication for user: {}", jwtPayload.subject());
 
-        // If the Authorization header starts with 'Bearer ', extract the token and username
-        if (authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            log.debug("JWT token extracted from Authorization header");
-            // Extract the username from the JWT token using JwtUtil
-            username = JwtUtil.extractUsername(token);
-        }
+            // Convert roles to GrantedAuthority list
+            var authorities = jwtPayload.roles().stream().
+                    map(SimpleGrantedAuthority::new)
+                    .toList();
 
-        // If username is present, authentication is not already set, and token is valid, set authentication
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null
-                && JwtUtil.isTokenValid(token)) {
-            log.debug("JWT token is valid, setting authentication for user: {}", username);
+            // Create a new User object with the subject and roles from the JWT payload
+            var user = new User(jwtPayload.subject(), "", authorities);
             // Create an authentication token and set it in the security context
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    new User(username, "", Collections.emptyList()), null, Collections.emptyList());
+            var authToken = new UsernamePasswordAuthenticationToken(user, null, authorities);
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authToken);
-        } else if (username != null) {
-            // If username is present but token is invalid or authentication is already set
-            log.warn("JWT token is invalid or authentication already set for user: {}", username);
+        } else {
+            // If subject is present but token is invalid or authentication is already set
+            log.warn("Authentication already set for user: {}", jwtPayload.subject());
         }
 
         // Continue the filter chain for the next filter or resource
