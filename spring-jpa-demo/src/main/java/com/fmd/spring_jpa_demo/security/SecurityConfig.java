@@ -2,6 +2,7 @@ package com.fmd.spring_jpa_demo.security;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,13 +20,18 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 @Slf4j
 @Configuration
+@ConditionalOnProperty(prefix = "com.fmd.spring-jpa-demo.security", name = "enabled", havingValue = "true")
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter();
+    }
 
     /**
      * Configures the security filter chain, disables CSRF, sets stateless session, and adds JWT filter.
@@ -64,7 +70,7 @@ public class SecurityConfig {
         });
 
         // Add the JWT authentication filter before the default UsernamePasswordAuthenticationFilter
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         // Build and return the configured SecurityFilterChain
         return http.build();
     }
