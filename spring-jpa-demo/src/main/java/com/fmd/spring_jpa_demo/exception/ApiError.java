@@ -1,5 +1,6 @@
 package com.fmd.spring_jpa_demo.exception;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
  * Contains timestamp, HTTP status, error, message, and request path.
  */
 public record ApiError(
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
         LocalDateTime timestamp,
         int status,
         String error,

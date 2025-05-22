@@ -1,11 +1,13 @@
 package com.fmd.spring_jpa_demo.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Instant;
 import java.util.Base64;
-import java.util.Date;
 import java.util.Optional;
 
 /**
@@ -43,7 +45,7 @@ public class JwtUtil {
         return Optional.ofNullable(token)
                 .map(JwtUtil::extractPayload)
                 .map(JwtPayload::expiration)
-                .map(exp -> exp.after(new Date()))
+                .map(exp -> exp.isAfter(Instant.now()))
                 .orElse(false);
     }
 
@@ -78,8 +80,18 @@ public class JwtUtil {
     private JwtPayload parsePayload(String payloadString) {
         try {
             log.debug("Parsing JWT payload");
+
+            // Create an ObjectMapper instance for JSON parsing
+            ObjectMapper mapper = new ObjectMapper();
+            // Register the JavaTimeModule to handle Java 8 date/time types
+            mapper.registerModule(new JavaTimeModule());
+            // Disable writing dates as timestamps
+            mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
             // Parse the JSON string into a JwtPayload object using Jackson
-            return new ObjectMapper().readValue(payloadString, JwtPayload.class);
+            JwtPayload jwtPayload = mapper.readValue(payloadString, JwtPayload.class);
+            log.trace("Parsed JWT payload: {}", jwtPayload);
+
+            return jwtPayload;
         } catch (Exception e) {
             // Log and throw a custom exception if parsing fails
             log.error("Failed to parse JWT payload", e);

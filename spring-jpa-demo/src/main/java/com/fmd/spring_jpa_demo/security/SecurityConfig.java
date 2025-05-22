@@ -22,6 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     /**
      * Configures the security filter chain, disables CSRF, sets stateless session, and adds JWT filter.
@@ -40,6 +41,10 @@ public class SecurityConfig {
         // Set session management to stateless (no HTTP session)
         http.sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        // Configure custom authentication entry point for handling authentication failures
+        http.exceptionHandling(exception ->
+                exception.authenticationEntryPoint(customAuthenticationEntryPoint));
 
         // Configure authorization rules for HTTP requests
         http.authorizeHttpRequests(auth -> {
