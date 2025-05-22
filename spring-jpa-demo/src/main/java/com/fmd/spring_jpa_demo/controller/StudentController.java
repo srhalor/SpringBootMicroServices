@@ -10,14 +10,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
  * REST controller for managing Student resources.
  */
+@Slf4j
 @RestController
 @RequiredArgsConstructor
-@Slf4j
+@RequestMapping("/api/v1/student")
 public class StudentController {
 
     private final StudentService studentService;
@@ -28,7 +30,7 @@ public class StudentController {
      * @param studentDTO the student data transfer object
      * @return the saved student DTO
      */
-    @PostMapping("/student")
+    @PostMapping
     public StudentDTO saveStudent(@Valid @RequestBody StudentDTO studentDTO) {
         log.info("Saving Student : {}", studentDTO);
         var saved = studentService.saveStudent(studentDTO);
@@ -45,7 +47,7 @@ public class StudentController {
      * @param direction the sort direction
      * @return a page of student DTOs
      */
-    @GetMapping("/student")
+    @GetMapping
     public Page<StudentDTO> getAllStudent(
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
@@ -57,7 +59,7 @@ public class StudentController {
 
         var sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
         var page = studentService.getAllStudent(PageRequest.of(offset, pageSize, sort));
-        log.debug("Fetched {} students", page.getTotalElements());
+        log.info("Fetched {} students", page.getTotalElements());
         return page;
     }
 
@@ -67,7 +69,7 @@ public class StudentController {
      * @param id the student ID
      * @return the student DTO or 404 if not found
      */
-    @GetMapping("/student/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<StudentDTO> getStudentById(@PathVariable int id) {
         log.info("Find student by ID : {}", id);
         // Let StudentNotFoundException propagate to GlobalExceptionHandler
@@ -84,7 +86,7 @@ public class StudentController {
      * @param id         the student ID
      * @return the updated student DTO or 404 if not found
      */
-    @PutMapping("/student/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<StudentDTO> updateStudent(@Valid @RequestBody StudentDTO studentDTO,
                                                     @PathVariable int id) {
         log.info("Update student by ID : {}", id);
@@ -95,11 +97,13 @@ public class StudentController {
 
     /**
      * Deletes a student by ID.
+     * This method is only accessible to users with the "Admin" role.
      *
      * @param id the student ID
      * @return 204 if deleted, 404 if not found
      */
-    @DeleteMapping("/student/{id}")
+    @PreAuthorize("hasRole('Admin')")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStudentById(@PathVariable int id) {
         log.info("Delete student by ID : {}", id);
         // Let StudentNotFoundException propagate to GlobalExceptionHandler

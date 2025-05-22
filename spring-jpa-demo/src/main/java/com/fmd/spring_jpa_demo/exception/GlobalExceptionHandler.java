@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -67,6 +68,20 @@ public class GlobalExceptionHandler {
         log.warn("Student not found: {} | Path: {}", ex.getMessage(), request.getDescription(false));
         ApiError error = new ApiError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getDescription(false));
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Handles AuthorizationDeniedException and returns a 403 error response with a custom message.
+     *
+     * @param ex      the exception
+     * @param request the web request
+     * @return ResponseEntity with ApiError and 403 status
+     */
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ApiError> handleAuthorizationDeniedException(AuthorizationDeniedException ex, WebRequest request) {
+        log.warn("Access denied: {} | Path: {}", ex.getMessage(), request.getDescription(false));
+        ApiError error = new ApiError(HttpStatus.FORBIDDEN, "Access Denied: " + ex.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
     /**

@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -18,11 +19,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 @Slf4j
 @Configuration
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     /**
      * Configures the security filter chain, disables CSRF, sets stateless session, and adds JWT filter.
@@ -42,14 +45,18 @@ public class SecurityConfig {
         http.sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        // Configure custom authentication entry point for handling authentication failures
-        http.exceptionHandling(exception ->
-                exception.authenticationEntryPoint(customAuthenticationEntryPoint));
+        // Configure custom authentication entry point for handling authentication/access denied errors
+        http.exceptionHandling(exception -> {
+            exception.authenticationEntryPoint(customAuthenticationEntryPoint);
+            exception.accessDeniedHandler(customAccessDeniedHandler);
+        });
 
         // Configure authorization rules for HTTP requests
         http.authorizeHttpRequests(auth -> {
             // Allow unauthenticated access to /auth/** endpoints
             auth.requestMatchers("/auth/**").permitAll();
+            auth.requestMatchers("/actuator/**").permitAll();
+            auth.requestMatchers("/h2-console/**").permitAll();
             // Allow all OPTIONS requests (CORS preflight)
             auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
             // Require authentication for all other requests

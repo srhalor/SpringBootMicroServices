@@ -1,0 +1,44 @@
+package com.fmd.spring_jpa_demo.security;
+
+import com.fmd.spring_jpa_demo.exception.ApiError;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+
+/**
+ * Custom AccessDeniedHandler to return a JSON response on access denied.
+ * <p>
+ * This class implements Spring Security's AccessDeniedHandler interface and is used to handle
+ * authorization errors by returning a structured JSON response containing error details.
+ *
+ * <p>On access denied, it responds with HTTP 403 (Forbidden) and a JSON body
+ * containing an {@link ApiError} object with the error message and request URI.</p>
+ *
+ * @author Shailesh Halor
+ */
+@Component
+public class CustomAccessDeniedHandler implements AccessDeniedHandler {
+
+    /**
+     * Handles access denied errors by sending a JSON response with error details.
+     *
+     * @param request               the HttpServletRequest
+     * @param response              the HttpServletResponse
+     * @param accessDeniedException the exception that caused the access denial
+     * @throws IOException if an input or output exception occurs
+     */
+    @Override
+    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException)
+            throws IOException {
+        ApiError apiError = new ApiError(HttpStatus.FORBIDDEN,
+                "Access Denied: " + accessDeniedException.getMessage(),
+                request.getRequestURI());
+        ErrorResponseUtil.writeErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, apiError);
+    }
+}
+

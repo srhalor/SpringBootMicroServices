@@ -40,6 +40,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 
+        try {
+            // Authenticate the request by validating the JWT token
+            authenticateRequest(request);
+
+        } catch (JwtValidationException | JwtParseException e) {
+            log.warn("JWT error: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("Unhandled error in JWT filter", e);
+        }
+
+        // Continue the filter chain for the next filter or resource
+        filterChain.doFilter(request, response);
+    }
+
+    /**
+     * Authenticates the request by validating the JWT token in the Authorization header.
+     *
+     * @param request the HTTP request
+     */
+    private static void authenticateRequest(HttpServletRequest request) {
         log.debug("Processing JWT authentication filter");
 
         // Retrieve the Authorization header from the request
@@ -67,8 +87,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // If subject is present but token is invalid or authentication is already set
             log.warn("Authentication already set for user: {}", jwtPayload.subject());
         }
-
-        // Continue the filter chain for the next filter or resource
-        filterChain.doFilter(request, response);
     }
 }

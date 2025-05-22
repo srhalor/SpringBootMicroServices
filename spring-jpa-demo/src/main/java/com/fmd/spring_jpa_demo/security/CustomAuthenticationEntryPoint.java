@@ -1,8 +1,5 @@
 package com.fmd.spring_jpa_demo.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fmd.spring_jpa_demo.exception.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -41,13 +38,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         ApiError apiError = new ApiError(HttpStatus.UNAUTHORIZED,
                 "Authentication failed: " + authException.getMessage(),
                 request.getRequestURI());
-        // Write ApiError as JSON
-        ObjectMapper mapper = new ObjectMapper();
-        // Register JavaTimeModule to handle LocalDateTime serialization
-        mapper.registerModule(new JavaTimeModule());
-        // Disable writing dates as timestamps
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        response.getWriter().write(mapper.writeValueAsString(apiError));
+        ErrorResponseUtil.writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, apiError);
     }
 }
 

@@ -32,14 +32,12 @@ public class JwtUtil {
         log.trace("Null and empty check for JWT token");
         // Check if the token is null or empty
         if (!StringUtils.hasText(token)) {
-            log.warn("JWT token is null or empty");
             throw new JwtParseException("JWT token is null or empty");
         }
 
         log.trace("Token starts with 'Bearer ' check");
         // Check if the token starts with "Bearer "
         if (!token.startsWith("Bearer ")) {
-            log.warn("JWT token does not start with 'Bearer '");
             throw new JwtParseException("JWT token does not start with 'Bearer '");
         }
 
@@ -48,7 +46,6 @@ public class JwtUtil {
         var parts = token.split("\\.");
         // Check if the token has 3 parts
         if (parts.length != 3) {
-            log.warn("JWT token does not have 3 parts");
             throw new JwtParseException("JWT token does not have 3 parts");
         }
 
@@ -89,8 +86,7 @@ public class JwtUtil {
 
             return jwtPayload;
         } catch (Exception e) {
-            // Log and throw a custom exception if parsing fails
-            log.error("Failed to parse JWT payload", e);
+            log.error("Failed to parse JWT payload: ", e);
             throw new JwtParseException("Failed to parse JWT payload", e);
         }
     }
@@ -104,27 +100,23 @@ public class JwtUtil {
 
         // Check if the JWT payload is null
         if (jwtPayload == null) {
-            log.warn("JWT payload is null");
             throw new JwtValidationException("JWT payload is null");
         }
 
-        log.trace("Validating token expiration" );
+        log.trace("Validating token expiration");
         // Check if the JWT payload has a valid expiration date
         if (jwtPayload.expiration() == null) {
-            log.warn("JWT payload expiration date is null");
             throw new JwtValidationException("JWT payload expiration date is null");
         }
 
         // Check if the JWT payload has expired
         if (jwtPayload.expiration().isBefore(Instant.now())) {
-            log.warn("JWT token has expired");
             throw new JwtValidationException("JWT token has expired");
         }
 
         log.trace("Validating token subject");
         // Check if the JWT payload has a valid subject
         if (!StringUtils.hasText(jwtPayload.subject())) {
-            log.warn("JWT payload subject is null or empty");
             throw new JwtValidationException("JWT payload subject is null or empty");
         }
 
