@@ -27,7 +27,7 @@ public class JwtUtil {
      * @throws IllegalArgumentException if the token is invalid
      */
     public JwtPayload validateAndExtractPayload(String token) {
-        log.debug("Validating and extracting JWT payload");
+        log.debug("Validating JWT token structure");
 
         log.trace("Null and empty check for JWT token");
         // Check if the token is null or empty
@@ -38,7 +38,7 @@ public class JwtUtil {
         log.trace("Token starts with 'Bearer ' check");
         // Check if the token starts with "Bearer "
         if (!token.startsWith("Bearer ")) {
-            throw new JwtParseException("JWT token does not start with 'Bearer '");
+            throw new JwtParseException("JWT token does not start with 'Bearer ': " + token.substring(0, 7));
         }
 
         log.trace("Checking if token has 3 parts");
@@ -56,6 +56,7 @@ public class JwtUtil {
         // parse the payload part into a JwtPayload object
         var jwtPayload = parsePayload(payloadPart);
 
+        log.debug("Validating JWT payload");
         // Validate the JWT payload, throws an exception if invalid
         validatePayload(jwtPayload);
 
@@ -120,6 +121,5 @@ public class JwtUtil {
             throw new JwtValidationException("JWT payload subject is null or empty");
         }
 
-        log.info("JWT token is valid for user: {}", jwtPayload.subject());
     }
 }

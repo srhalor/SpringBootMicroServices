@@ -44,8 +44,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Authenticate the request by validating the JWT token
             authenticateRequest(request);
 
-        } catch (JwtValidationException | JwtParseException e) {
-            log.warn("JWT error: {}", e.getMessage());
+        } catch (JwtValidationException e) {
+            log.warn("Error while validating JWT token : {}", e.getMessage());
+        } catch (JwtParseException e) {
+            log.warn("Error while parsing JWT token : {}", e.getMessage());
         } catch (Exception e) {
             log.error("Unhandled error in JWT filter", e);
         }
@@ -65,12 +67,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Retrieve the Authorization header from the request
         var authHeader = request.getHeader("Authorization");
 
+        log.info("Authenticating request with JWT token");
         // Validate and extract the JWT payload from the Authorization header
         var jwtPayload = JwtUtil.validateAndExtractPayload(authHeader);
+        log.info("User [{}] authenticated successfully", jwtPayload.subject());
 
         // If subject is present, authentication is not already set, and token is valid, set authentication
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            log.debug("JWT token is valid, setting authentication for user: {}", jwtPayload.subject());
+            log.debug("Setting authentication for user: [{}]", jwtPayload.subject());
 
             // Convert roles to GrantedAuthority list
             var authorities = jwtPayload.roles().stream().
@@ -85,7 +89,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authToken);
         } else {
             // If subject is present but token is invalid or authentication is already set
-            log.warn("Authentication already set for user: {}", jwtPayload.subject());
+            log.warn("Authentication already set for user: [{}]", jwtPayload.subject());
         }
     }
 }
