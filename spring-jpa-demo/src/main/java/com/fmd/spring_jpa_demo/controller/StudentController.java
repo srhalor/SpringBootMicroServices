@@ -102,7 +102,7 @@ public class StudentController {
      * @param id the student ID
      * @return 204 if deleted, 404 if not found
      */
-    @PreAuthorize("hasRole('Admin')")
+    @PreAuthorize("hasAuthority('Admin')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStudentById(@PathVariable int id) {
         log.info("Delete student by ID : {}", id);
