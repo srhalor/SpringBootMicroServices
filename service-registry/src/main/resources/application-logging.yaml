@@ -1,0 +1,25 @@
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    com.fmd.service_registry: INFO
+    org.hibernate.SQL: ERROR
+  pattern:
+    console: "%highlight([%-5level]) %logger{36} - %msg%n"
+  file:
+    name: C:/log/service-registry/log.json
+  logback:
+    rollingpolicy:
+      max-history: 10
+      max-file-size: 10MB
+      total-size-cap: 100MB
+  structured:
+    format:
+      file: ecs
+    ecs:
+      service:
+        name: service-registry
+        version: 1.0.0
+        environment: dev
+        node-name: Primary
+

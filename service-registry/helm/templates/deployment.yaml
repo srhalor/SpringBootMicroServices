@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "service-registry.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ include "service-registry.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "service-registry.name" . }}
+    spec:
+      containers:
+        - name: {{ include "service-registry.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+            - containerPort: {{ .Values.service.actuatorPort }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "service-registry.fullname" . }}-env
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: {{ .Values.service.actuatorPort }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: {{ .Values.service.actuatorPort }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
