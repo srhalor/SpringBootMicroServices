@@ -8,7 +8,7 @@ logging:
   pattern:
     console: "%highlight([%-5level]) %logger{36} - %msg%n"
   file:
-    name: C:/log/log.json
+    name: C:/log/spring-jpa-demo/log.json
   logback:
     rollingpolicy:
       max-history: 10
