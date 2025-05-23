@@ -3,3 +3,11 @@ spring:
     name: service-registry
   config:
     import: classpath:application-logging.yaml
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+logging:
+  level:
+    com.netflix.eureka: OFF
+    com.netflix.discovery: OFF

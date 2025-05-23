@@ -1,7 +1,20 @@
 # Spring Boot application configuration file
 spring:
   application:
-    name: spring-jpa-demo
+    name: SPRING-JPA-DEMO
   config:
     import: classpath:application-logging.yaml
 
+server:
+  servlet:
+    context-path: /spring-jpa-demo
+
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true

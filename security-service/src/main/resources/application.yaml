@@ -3,3 +3,17 @@ spring:
     name: security-service
   config:
     import: classpath:application-logging.yaml
+
+server:
+  servlet:
+    context-path: /auth-service
+
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true

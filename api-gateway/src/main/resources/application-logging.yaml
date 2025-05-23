@@ -2,7 +2,8 @@ logging:
   level:
     root: INFO
     org.springframework.web: DEBUG
-    com.fmd.security_service: ERROR
+    org.springframework.cloud.gateway: DEBUG
+    com.fmd.api_gateway: ERROR
     org.hibernate.SQL: ERROR
   pattern:
     console: "%highlight([%-5level]) %logger{36} - %msg%n"
