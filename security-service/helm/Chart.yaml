@@ -1,0 +1,7 @@
+apiVersion: v2
+name: security-service
+version: 0.1.0
+description: A Helm chart for deploying security-service on MicroK8s
+appVersion: "1.0"
+type: application
+

@@ -1,0 +1,15 @@
+image:
+  repository: srhalor/security-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8010
+  actuatorPort: 8011
+
+env:
+  SERVER_PORT: 8080
+  MANAGEMENT_SERVER_PORT: 8081
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE_HEALTH: true
