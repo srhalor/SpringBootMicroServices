@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: api-gateway
+  config:
+    import: classpath:application-logging.yaml
