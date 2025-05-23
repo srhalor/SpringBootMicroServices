@@ -12,7 +12,7 @@ import java.util.Base64;
 
 /**
  * Utility class for handling JWT operations such as extracting username, validating tokens,
- * and parsing JWT payloads. This class is a Spring singleton bean.
+ * and parsing JWT payloads.
  */
 @Slf4j
 @UtilityClass

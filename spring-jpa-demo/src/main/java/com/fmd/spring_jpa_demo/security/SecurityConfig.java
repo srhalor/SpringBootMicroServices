@@ -77,10 +77,14 @@ public class SecurityConfig {
 
     /**
      * Provides the AuthenticationManager bean.
+     * <p>
+     * This bean is required for authentication-related operations in the application.
+     * In this configuration, it simply delegates to the default AuthenticationManager
+     * provided by Spring Security's AuthenticationConfiguration.
      *
-     * @param config the AuthenticationConfiguration
-     * @return the AuthenticationManager
-     * @throws Exception if retrieval fails
+     * @param config the AuthenticationConfiguration instance provided by Spring
+     * @return the AuthenticationManager instance
+     * @throws Exception if retrieval of the AuthenticationManager fails
      */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {

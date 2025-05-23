@@ -1,7 +1,7 @@
 # Spring Boot application configuration file
-logging:
-  level:
-    org.springframework.security: ERROR
-    com.fmd.spring_jpa_demo: DEBUG
-
+spring:
+  application:
+    name: spring-jpa-demo
+  config:
+    import: classpath:application-logging.yaml
 
