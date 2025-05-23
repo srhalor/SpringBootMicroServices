@@ -9,7 +9,7 @@ USER spring:spring
 WORKDIR /app
 
 # Copy the jar file (built by Maven) into the container
-COPY target/spring-jpa-demo-0.0.1-SNAPSHOT.jar app.jar
+COPY target/spring-jpa-demo-*.jar app.jar
 
 # Expose the default Spring Boot port
 EXPOSE 8080

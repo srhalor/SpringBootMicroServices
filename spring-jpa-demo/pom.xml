@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.fmd</groupId>
 	<artifactId>spring-jpa-demo</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>spring-jpa-demo</name>
 	<description>Demo project for Spring Boot JPA</description>
 	<developers>
