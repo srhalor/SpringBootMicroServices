@@ -14,7 +14,8 @@ import java.util.List;
 @Builder
 public record JwtPayload(
         // JWT issuer (who issued the token)
-        @JsonProperty("iss") String issuer,
+        @JsonProperty("iss")
+        String issuer,
         // JWT issued at (timestamp in seconds since epoch)
         @JsonProperty("iat")
         Instant issuedAt,
@@ -22,12 +23,16 @@ public record JwtPayload(
         @JsonProperty("exp")
         Instant expiration,
         // JWT audience (intended recipient)
-        @JsonProperty("aud") String audience,
+        @JsonProperty("aud")
+        String audience,
         // JWT subject (the user or entity the token refers to)
-        @JsonProperty("sub") String subject,
+        @JsonProperty("sub")
+        String subject,
         // Name of the user/entity
-        @JsonProperty("name") String name,
+        @JsonProperty("name")
+        String name,
         // Roles assigned to the user/entity
-        @JsonProperty("roles") List<String> roles
+        @JsonProperty("roles")
+        List<String> roles
 ) {
 }

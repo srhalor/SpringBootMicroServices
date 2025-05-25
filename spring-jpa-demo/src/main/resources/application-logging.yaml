@@ -1,9 +1,9 @@
 logging:
   level:
-    root: INFO
+    root: ERROR
     org.springframework.web: ERROR
     org.springframework.security: ERROR
-    com.fmd.spring_jpa_demo: ERROR
+    com.fmd.spring_jpa_demo: TRACE
     org.hibernate.SQL: ERROR
   pattern:
     console: "%highlight([%-5level]) %logger{36} - %msg%n"

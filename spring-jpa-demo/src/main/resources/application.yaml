@@ -18,3 +18,15 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
     register-with-eureka: true
     fetch-registry: true
+
+request:
+  body:
+    sanitization:
+      enabled: true
+  header:
+    validation:
+      enabled: true
+      fields: Authorization
+    logging:
+      enabled: false
+      fields: X-Request-ID, X-Correlation-ID
