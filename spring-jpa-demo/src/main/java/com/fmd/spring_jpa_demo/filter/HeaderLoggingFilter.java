@@ -67,7 +67,7 @@ public class HeaderLoggingFilter extends OncePerRequestFilter {
                 log.trace("Adding headers to MDC: {}", headers);
                 for (String header : headers) {
                     String value = request.getHeader(header);
-                    if (!StringUtils.hasText(value)) {
+                    if (StringUtils.hasText(value)) {
                         MDC.put(header, value);
                     }
                 }

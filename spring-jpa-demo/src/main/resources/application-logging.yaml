@@ -16,7 +16,7 @@ logging:
       total-size-cap: 100MB
   structured:
     format:
-      file: ecs
+      console: ecs
     ecs:
       service:
         name: spring-jpa-demo

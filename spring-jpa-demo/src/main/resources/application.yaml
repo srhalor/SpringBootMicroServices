@@ -28,5 +28,5 @@ request:
       enabled: true
       fields: Authorization
     logging:
-      enabled: false
+      enabled: true
       fields: X-Request-ID, X-Correlation-ID
