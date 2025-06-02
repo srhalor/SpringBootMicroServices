@@ -17,6 +17,25 @@ All other processes, security, and deployment practices remain consistent with t
 | Document Processing API | Async processing, enriches (using Reference Data API), Thunderhead API calls, updates DB, triggers Monitoring API |
 | Monitoring API          | Async processing, polls Thunderhead for status, updates DB, publishes final status to Kafka Event Hub             |
 
+- **Document Request API:**
+  - Entry point for all document generation requests from client systems.
+  - Validates incoming requests using the Reference Data API.
+  - Persists validated requests in the OMS database.
+  - Triggers the Document Processing API to start processing the request.
+
+- **Document Processing API:**
+  - Handles asynchronous processing of document requests.
+  - Enriches requests by fetching additional data from the Reference Data API.
+  - Calls the Thunderhead API to generate documents.
+  - Updates the OMS database with processing and Thunderhead batch details.
+  - Triggers the Monitoring API to begin status tracking.
+
+- **Monitoring API:**
+  - Handles asynchronous monitoring of document status.
+  - Periodically polls the Thunderhead API for the latest status of each document request.
+  - Updates the OMS database with the latest status.
+  - Publishes final status events (completed/failed) to the Kafka Event Hub for downstream consumers.
+
 ---
 
 ## 3. System Orchestration Flow

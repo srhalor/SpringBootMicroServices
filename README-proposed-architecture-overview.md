@@ -14,55 +14,61 @@ This document proposes an improved architecture for the Output Management System
 | Security Service       | Validates JWT; only authenticated requests reach backend services                                                                      |
 | Reference Data API     | Centralized access to reference data (allowed sources, enrichment etc.), uses Redis for caching                                        |
 | Thunderhead API        | SOAP API (via Oracle API Gateway REST-to-SOAP) for submitting documents, retrieving status, and error details                          |
-| Kafka Event Hub        | Publishes final status updates                                                                                                         |
 | OMS Database           | Central storage for requests, statuses, reference data, error tracking etc.                                                            |
 | OMS Services           | Core services that orchestrate the request flow, manage processing, and track status                                                   |
+| Kafka Event Hub        | Publishes final status updates                                                                                                         |
+
+- **Oracle API Gateway:**
+  - Entry point for all client requests.
+  - Provides additional security, including authentication and authorization, as well as throttling and monitoring.
+  - Forwards requests to the internal API Gateway (Nginx) after enforcing security policies.
+
+- **API Gateway:**
+  - Nginx Ingress Controller responsible for routing requests to backend OMS services.
+  - Forwards requests to services only after successful authentication by the Security Service.
+  - Centralizes API routing and load balancing for OMS microservices.
+
+- **Security Service:**
+  - Invokes the OIDM `/oauth2/rest/rest/token` API to validate the JWT token received in each request.
+  - In parallel, extracts the payload from the JWT token and validates:
+    - The expiry date is greater than the current time (token is not expired).
+    - The domain and scope in the payload match the configured allowed values.
+  - Only if all validations pass, the request is considered authenticated and authorized.
+  - Ensures that only valid, non-expired, and properly scoped tokens are allowed to access backend services.
+
+- **Reference Data API:**
+  - Provides a single point of access for all reference data required by OMS services.
+  - Supports CRUD operations for managing reference data.
+  - Integrates with Redis for caching: on data request, checks Redis cache first; if not found, fetches from the database, returns the data, and updates the cache.
+  - Ensures cache consistency by updating or invalidating Redis entries on data changes.
+  - Reduces database load and improves response times for frequently accessed reference data.
+
+- **Thunderhead API:**
+  - SOAP-based API provided by SmartComm Thunderhead.
+  - Offers endpoints for submitting documents, retrieving document status, fetching error details, and other document management operations.
+  - Secured by an Oracle API Gateway layer that enforces authentication, authorization, and traffic management policies.
+  - Oracle API Gateway implements a REST-to-SOAP policy, allowing OMS services to invoke Thunderhead operations using RESTful calls, with the gateway handling REST-to-SOAP conversion and forwarding.
+  - Simplifies integration for OMS services and leverages the security and management features of the Oracle API Gateway.
+
+- **OMS Database:**
+  - Serves as the central storage for all OMS-related data, including document requests, statuses, reference data, and error tracking.
+
+- **OMS Services:**
+  - Core set of microservices responsible for orchestrating the document request flow, managing processing, and tracking status.
+  - Handle business logic for document intake, validation, enrichment, processing, and status management.
+  - Interact with external systems (e.g., Thunderhead API, Reference Data API) and internal components (OMS Database, Kafka Event Hub).
+  - Designed for modularity and scalability, allowing independent deployment and scaling of individual services.
+  - Expose APIs or background jobs as needed for orchestration and integration with other OMS components.
+  - The specific OMS Services and their roles are explained in detail within each solution variant's documentation.
+
+- **Kafka Event Hub:**
+  - Event streaming platform for publishing and consuming status updates and other events.
+  - Enables asynchronous communication between OMS services and downstream consumers.
+  - Provides durability, scalability, and at-least-once delivery guarantees for event-driven processing.
 
 ---
 
-## 3. Security
-- **Oracle API Gateway** is the entry point for all client requests, providing additional security, throttling, and monitoring before forwarding to the internal API Gateway (Nginx).
-- **API Gateway** uses Nginx Ingress Controller for all API routing.
-- For each request, Nginx calls the **Security Service** to validate the JWT token.
-- Only if the Security Service confirms authentication, Nginx forwards the request to the backend OMS service.
-- This ensures all backend services are protected and only accessible with valid JWTs.
-
----
-
-## 4. Reference Data API
-The Reference Data API provides a single point of access for all reference data required by OMS services:
-
-**Features:**
-- Supports CRUD operations for managing reference data.
-- Integrates with Redis for caching: on data request, checks Redis cache first; if not found, fetches from the database, returns the data, and updates the cache.
-- Ensures cache consistency by updating or invalidating Redis entries on data changes.
-- Reduces database load and improves response times for frequently accessed reference data.
-
----
-
-## 5. Thunderhead API
-The Thunderhead API is a SOAP-based API provided by SmartComm Thunderhead. It offers endpoints for submitting documents, retrieving document status, fetching error details, and other document management operations.
-To enhance security, an Oracle API Gateway layer is placed in front of the Thunderhead API. This gateway enforces authentication, authorization, and traffic management policies.
-Additionally, the Oracle API Gateway implements a REST-to-SOAP policy. This allows OMS services to invoke Thunderhead operations using RESTful calls, while the gateway transparently converts these REST requests to SOAP and forwards them to the Thunderhead API. This approach simplifies integration for OMS services and leverages the security and management features of the Oracle API Gateway.
-
----
-
-## 6. Monitoring & Observability
-- **ELK Stack (Elasticsearch, Logstash, Kibana)** is used for monitoring, log aggregation, and alerting.
-- All services are instrumented for centralized logging and metrics.
-- Additional monitoring is provided by Azure Monitor and Application Insights for real-time performance tracking and alerting.
-
----
-
-## 7. Deployment
-- All modules are Dockerized and deployed via Kubernetes.
-- Helm charts are used for deployment and configuration management.
-- All configurations are stored in Azure variables for secure management.
-- Deployment is managed by Azure DevOps pipelines for CI/CD.
-
----
-
-## 8. Solution Variants for OMS Service Orchestration
+## 3. Solution Variants for OMS Service Orchestration
 - [API Orchestration Solution](./README-api-solution.md): Uses REST APIs for asynchronous orchestration between services.
 - [Kafka Event-Driven Solution](./README-kafka-solution.md): Uses Kafka Event Hub for asynchronous, event-driven communication between services.
 - [Scheduled Jobs Solution](./README-scheduled-jobs-solution.md): Uses scheduled jobs for background processing and status tracking, with no inter-service APIs.
@@ -71,7 +77,31 @@ Each solution document describes its unique orchestration, error handling, and p
 
 ---
 
-## 9. Pros and Cons: Comparison with Other Solutions
+## 4. Security
+- **Oracle API Gateway** is the entry point for all client requests, providing additional security, throttling, and monitoring before forwarding to the internal API Gateway (Nginx).
+- **API Gateway** uses Nginx Ingress Controller for all API routing.
+- For each request, Nginx calls the **Security Service** to validate the JWT token.
+- Only if the Security Service confirms authentication, Nginx forwards the request to the backend OMS service.
+- This ensures all backend services are protected and only accessible with valid JWTs.
+
+---
+
+## 5. Monitoring & Observability
+- **ELK Stack (Elasticsearch, Logstash, Kibana)** is used for monitoring, log aggregation, and alerting.
+- All services are instrumented for centralized logging and metrics.
+- Additional monitoring is provided by Azure Monitor and Application Insights for real-time performance tracking and alerting.
+
+---
+
+## 6. Deployment
+- All modules are Dockerized and deployed via Kubernetes.
+- Helm charts are used for deployment and configuration management.
+- All configurations are stored in Azure variables for secure management.
+- Deployment is managed by Azure DevOps pipelines for CI/CD.
+
+---
+
+## 7. Pros and Cons: Comparison with Other Solutions
 
 | Aspect                   | API Orchestration              | Kafka Event-Driven                 | Scheduled Jobs (This)          |
 |--------------------------|--------------------------------|------------------------------------|--------------------------------|

@@ -15,6 +15,23 @@ All other processes, security, and deployment practices remain consistent with t
 | Document Processing Service | Runs as a scheduled job, processes and enriches the request (using Reference Data API), Thunderhead API calls, updates DB |
 | Monitoring Service          | Runs as a scheduled job, polls Thunderhead for status, updates DB, publishes final status to Kafka Event Hub              |
 
+- **Document Request API:**
+  - Entry point for all document generation requests from client systems.
+  - Validates incoming requests using the Reference Data API.
+  - Persists validated requests in the OMS database.
+
+- **Document Processing Service (Scheduled Job):**
+  - Periodically scans the database for new document requests.
+  - Processes and enriches requests by fetching additional data from the Reference Data API.
+  - Calls the Thunderhead API to generate documents.
+  - Updates the OMS database with processing and Thunderhead batch details.
+
+- **Monitoring Service (Scheduled Job):**
+  - Periodically scans the database for requests that require status monitoring.
+  - Polls the Thunderhead API for the latest status of each document request.
+  - Updates the OMS database with the latest status.
+  - Publishes final status events (completed/failed) to the Kafka Event Hub for downstream consumers.
+
 ---
 
 ## 3. System Orchestration Flow

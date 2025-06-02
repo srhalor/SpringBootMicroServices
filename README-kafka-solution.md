@@ -16,6 +16,31 @@ All other processes, security, and deployment practices remain consistent with t
 | Document Request API        | Receives, validates (using Reference Data API), and stores the request to DB, publishes request processing event to Kafka                                 |
 | Document Processing Service | Subscribes to processing event, processes and enriches (using Reference Data API), Thunderhead API calls, updates DB, publishes monitoring event to Kafka |
 | Monitoring Service          | Subscribes to monitoring event, polls Thunderhead for status, updates DB, publishes final status to Kafka Event Hub                                       |
+| Kafka Event Hub             | Event streaming platform for publishing and consuming status updates and other events. Enables asynchronous communication between services.               |
+
+- **Document Request API:**
+  - Entry point for all document generation requests from client systems.
+  - Validates incoming requests using the Reference Data API.
+  - Persists validated requests in the OMS database.
+  - Publishes a request processing event to Kafka for downstream processing.
+
+- **Document Processing Service:**
+  - Subscribes to request processing events from Kafka.
+  - Processes and enriches document requests using the Reference Data API.
+  - Calls the Thunderhead API to generate documents.
+  - Updates the OMS database with processing and Thunderhead batch details.
+  - Publishes a request monitoring event to Kafka for status tracking.
+
+- **Monitoring Service:**
+  - Subscribes to request monitoring events from Kafka.
+  - Periodically polls the Thunderhead API for the latest status of each document request.
+  - Updates the OMS database with the latest status.
+  - Publishes final status events (completed/failed) to the Kafka Event Hub for downstream consumers.
+
+- **Kafka Event Hub:**
+  - Event streaming platform for publishing and consuming status updates and other events.
+  - Enables asynchronous communication between OMS services and downstream consumers.
+  - Provides durability, scalability, and at-least-once delivery guarantees for event-driven processing.
 
 ---
 
