@@ -1,0 +1,73 @@
+@startuml
+!define RECTANGLE class
+
+RECTANGLE "Client System" as Client
+RECTANGLE "Document Request API" as DocRequestAPI
+RECTANGLE "Document Processing API" as DocProcessingAPI
+RECTANGLE "Monitoring API" as MonitoringAPI
+RECTANGLE "Reference Data API" as RefDataAPI
+RECTANGLE "Thunderhead API" as ThunderheadAPI
+RECTANGLE "OMS Database" as OMSDB
+RECTANGLE "Kafka Event Hub" as Kafka
+RECTANGLE "Recovery Scheduled Job" as RecoveryJob
+
+Client --> DocRequestAPI : Document Generation Request
+DocRequestAPI --> RefDataAPI : Validate Request
+DocRequestAPI --> OMSDB : Store Request
+DocRequestAPI --> DocProcessingAPI : Trigger Processing
+DocProcessingAPI --> RefDataAPI : Enrich Request
+DocProcessingAPI --> ThunderheadAPI : Generate Document
+DocProcessingAPI --> OMSDB : Update Processing/Batch Details
+DocProcessingAPI --> MonitoringAPI : Trigger Monitoring
+MonitoringAPI --> ThunderheadAPI : Poll Status
+MonitoringAPI --> OMSDB : Update Status
+MonitoringAPI --> Kafka : Publish Final Status
+RecoveryJob --> OMSDB : Query Error Table
+RecoveryJob --> DocProcessingAPI : Retry Failed Processing
+RecoveryJob --> MonitoringAPI : Retry Failed Monitoring
+
+note left of Client
+- Follows all security, gateway,
+ and validation processes as
+ described in the overall architecture
+ (oms-architecture-overview)
+end note
+
+note left of DocRequestAPI
+- Entry point for document requests
+- Validates and stores requests
+- Triggers processing
+end note
+
+note left of DocProcessingAPI
+- Async processing
+- Enriches and generates documents
+- Updates DB and triggers monitoring
+end note
+
+note top of MonitoringAPI
+- Async monitoring
+- Polls Thunderhead for status
+- Updates DB and publishes final status
+end note
+
+note bottom of OMSDB
+- Central storage for requests, statuses, batch details
+end note
+
+note bottom of ThunderheadAPI
+- SOAP API
+- REST-to-SOAP via Oracle API GW
+end note
+
+note bottom of Kafka
+- Publishes final status events
+end note
+
+note left of RecoveryJob
+- Periodically checks error table in OMS DB
+- Retries failed requests by invoking Document Processing API or Monitoring API
+end note
+
+@enduml
+

@@ -1,7 +1,6 @@
 package com.fmd.spring_jpa_demo.filter;
 
 import com.fmd.spring_jpa_demo.exception.ApiError;
-import com.fmd.spring_jpa_demo.security.ErrorResponseUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -20,6 +18,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.fmd.spring_jpa_demo.security.ErrorResponseUtil.writeErrorResponse;
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 /**
  * Filter to validate mandatory request headers.
@@ -65,7 +67,7 @@ public class HeaderValidationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         // Check if headers are configured for validation
-        if (null == headers || headers.stream().allMatch(String::isBlank)) {
+        if (headers == null || headers.stream().noneMatch(StringUtils::hasText)) {
             log.warn("No mandatory header fields configured for validation. Skipping header validation.");
             filterChain.doFilter(request, response);
             return;
@@ -74,20 +76,22 @@ public class HeaderValidationFilter extends OncePerRequestFilter {
         // Validate the presence of mandatory headers
         log.debug("Validating mandatory headers: {}", headers);
         List<String> missingHeaders = new ArrayList<>();
-        for (var header : headers) {
-            var value = request.getHeader(header);
-            // Check if the header is present and not empty otherwise add to missingHeaders
-            if (!StringUtils.hasText(value)) {
-                missingHeaders.add(header);
-            }
-        }
+        headers.stream()
+                .filter(StringUtils::hasText)
+                .forEach(header -> {
+                    var value = request.getHeader(header);
+                    // Check if the header is present and not empty otherwise add to missingHeaders
+                    if (!StringUtils.hasText(value)) {
+                        missingHeaders.add(header);
+                    }
+                });
 
         // If any mandatory header is missing, log the error and send a 400 Bad Request response
         if (!missingHeaders.isEmpty()) {
             log.warn("Missing mandatory headers: {}", missingHeaders);
             var errorMessage = "Missing mandatory headers: " + String.join(", ", missingHeaders);
-            ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, errorMessage, request.getRequestURI());
-            ErrorResponseUtil.writeErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, apiError);
+            ApiError apiError = new ApiError(BAD_REQUEST, errorMessage, request.getRequestURI());
+            writeErrorResponse(response, SC_BAD_REQUEST, apiError);
             return;
         }
         filterChain.doFilter(request, response);

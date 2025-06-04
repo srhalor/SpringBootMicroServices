@@ -1,0 +1,76 @@
+@startuml
+!define RECTANGLE class
+
+RECTANGLE "Client" as Client
+RECTANGLE "Oracle API Gateway" as OracleAPIGW
+RECTANGLE "Nginx Ingress Controller" as NGINX
+RECTANGLE "Security Service" as SecurityService
+RECTANGLE "Reference Data API" as RefDataAPI
+RECTANGLE "Redis Cache" as Redis
+RECTANGLE "Oracle API Gateway" as OracleAPIGWTH
+RECTANGLE "Thunderhead API" as ThunderheadAPI
+RECTANGLE "OMS Database" as OMSDB
+RECTANGLE "OMS Services" as OMSServices
+RECTANGLE "Kafka Event Hub" as Kafka
+
+Client --> OracleAPIGW : HTTPS Request
+OracleAPIGW --> NGINX : Forward (after security, throttling, monitoring)
+NGINX --> SecurityService : JWT Validation
+SecurityService --> NGINX : Auth Result
+NGINX --> OMSServices : Route Authenticated Request
+OMSServices --> RefDataAPI : Reference Data Request
+RefDataAPI --> Redis : Check/Update Cache
+RefDataAPI --> OMSDB : CRUD operations
+OMSServices --> OracleAPIGWTH : Document Submission/Status
+OracleAPIGWTH --> ThunderheadAPI : Forward Request (REST to SOAP)
+OMSServices --> OMSDB : Store/Update Request, Status, Errors
+OMSServices --> Kafka : Publish Final Status
+
+RefDataAPI ..> Redis : Uses
+
+note right of OracleAPIGW
+- Entry point for all clients
+- Security, throttling, monitoring
+end note
+
+note right of NGINX
+- Nginx Ingress Controller
+- API routing, load balancing
+end note
+
+note left of SecurityService
+- JWT validation/authentication
+- Domain/scope checks
+end note
+
+note left of RefDataAPI
+- CRUD for reference data
+- Redis caching
+end note
+
+note bottom of ThunderheadAPI
+- SOAP API
+- REST-to-SOAP via Oracle API GW
+end note
+
+note right of OMSServices
+- Orchestrates request flow
+- Business logic
+- Interacts with all components
+end note
+
+note bottom of Kafka
+- Event streaming
+- Status updates
+end note
+
+note bottom of OMSDB
+- Central storage
+- Requests, statuses, errors, Reference Data
+end note
+
+@enduml
+
+
+
+

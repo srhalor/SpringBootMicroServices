@@ -1,7 +1,7 @@
 package com.fmd.spring_jpa_demo.controller;
 
+import com.fmd.spring_jpa_demo.dto.PagingAndSortingRequest;
 import com.fmd.spring_jpa_demo.dto.StudentDTO;
-import com.fmd.spring_jpa_demo.exception.StudentNotFoundException;
 import com.fmd.spring_jpa_demo.service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,24 +41,20 @@ public class StudentController {
     /**
      * Retrieves all students with pagination and sorting.
      *
-     * @param offset    the page offset
-     * @param pageSize  the page size
-     * @param sortBy    the field to sort by
-     * @param direction the sort direction
+     * @param pageRequestDto the paging and sorting request DTO
      * @return a page of student DTOs
      */
     @GetMapping
-    public Page<StudentDTO> getAllStudent(
-            @RequestParam(value = "offset", defaultValue = "0") Integer offset,
-            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-            @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
-            @RequestParam(value = "direction", defaultValue = "ASC") String direction) {
+    public Page<StudentDTO> getAllStudent(@ModelAttribute PagingAndSortingRequest pageRequestDto) {
 
-        log.info("Get All Students with offset [{}], page size [{}] and " +
-                "sort by [{}] with direction [{}]", offset, pageSize, sortBy, direction);
+        log.info("Get All Students with offset [{}], page size [{}] and sort by [{}] with direction [{}]",
+                pageRequestDto.offset(), pageRequestDto.pageSize(), pageRequestDto.sortBy(), pageRequestDto.direction());
 
-        var sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
-        var page = studentService.getAllStudent(PageRequest.of(offset, pageSize, sort));
+        var sort = Sort.by(pageRequestDto.direction(), pageRequestDto.sortBy());
+        var pageRequest = PageRequest.of(pageRequestDto.offset(), pageRequestDto.pageSize(), sort);
+
+        var page = studentService.getAllStudent(pageRequest);
+
         log.info("Fetched {} students", page.getTotalElements());
         return page;
     }
@@ -73,8 +69,7 @@ public class StudentController {
     public ResponseEntity<StudentDTO> getStudentById(@PathVariable int id) {
         log.info("Find student by ID : {}", id);
         // Let StudentNotFoundException propagate to GlobalExceptionHandler
-        var studentDTO = studentService.getStudentById(id)
-                .orElseThrow(() -> new StudentNotFoundException(id));
+        var studentDTO = studentService.getStudentById(id);
         log.info("Student found for ID: {}", id);
         return ResponseEntity.ok(studentDTO);
     }

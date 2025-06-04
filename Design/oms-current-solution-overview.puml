@@ -1,0 +1,53 @@
+@startuml
+!define RECTANGLE class
+
+RECTANGLE "Client" as Client
+RECTANGLE "Oracle API Gateway" as OracleAPIGW
+RECTANGLE "Document Request API" as DocRequestAPI
+RECTANGLE "OMS Database" as OMSDB
+RECTANGLE "Thunderhead API" as ThunderheadAPI
+RECTANGLE "Monitoring Service" as MonitoringService
+RECTANGLE "Kafka Event Hub" as Kafka
+
+Client --> OracleAPIGW : HTTPS Request
+OracleAPIGW --> DocRequestAPI : Forward (after security, throttling, monitoring)
+DocRequestAPI --> OMSDB : Store/Update Request, Status, Reference Data, Errors
+DocRequestAPI --> ThunderheadAPI : Submit Document / Get Status
+MonitoringService --> ThunderheadAPI : Poll Status
+MonitoringService --> OMSDB : Update Status
+MonitoringService --> Kafka : Publish Final Status
+
+note right of OracleAPIGW
+- Entry point for all clients
+- Security, throttling, monitoring
+end note
+
+note right of DocRequestAPI
+- Authenticates and validates requests
+- Handles enrichment and processing
+- Calls Thunderhead API
+- Updates OMS Database
+end note
+
+note bottom of ThunderheadAPI
+- SOAP API (SmartComm)
+- REST-to-SOAP via Oracle API GW
+end note
+
+note right of MonitoringService
+- Scheduled job
+- Polls Thunderhead for status
+- Updates DB and publishes final status
+end note
+
+note bottom of OMSDB
+- Central storage
+- Requests, statuses, reference data, errors
+end note
+
+note bottom of Kafka
+- Publishes final status events
+end note
+
+@enduml
+

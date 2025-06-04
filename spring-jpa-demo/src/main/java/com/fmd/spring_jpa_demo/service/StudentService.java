@@ -4,8 +4,6 @@ import com.fmd.spring_jpa_demo.dto.StudentDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.Optional;
-
 /**
  * Service interface for managing Student entities and related operations.
  * <p>
@@ -32,9 +30,9 @@ public interface StudentService {
      * Retrieves a student by ID.
      *
      * @param id the student ID
-     * @return an optional student DTO
+     * @return student DTO
      */
-    Optional<StudentDTO> getStudentById(int id);
+    StudentDTO getStudentById(int id);
 
     /**
      * Updates an existing student.

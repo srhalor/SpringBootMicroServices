@@ -1,25 +1,10 @@
 package com.fmd.spring_jpa_demo.security;
 
+import lombok.experimental.StandardException;
+
 /**
  * Exception thrown when JWT payload parsing fails.
  */
+@StandardException
 public class JwtParseException extends RuntimeException {
-    /**
-     * Constructs a new JwtParseException with the specified detail message and cause.
-     *
-     * @param message the detail message
-     * @param cause   the cause of the exception
-     */
-    public JwtParseException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    /**
-     * Constructs a new JwtParseException with the specified detail message.
-     *
-     * @param message the detail message
-     */
-    public JwtParseException(String message) {
-        super(message);
-    }
 }

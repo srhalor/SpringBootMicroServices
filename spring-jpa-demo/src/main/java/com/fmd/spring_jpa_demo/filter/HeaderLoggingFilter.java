@@ -61,24 +61,28 @@ public class HeaderLoggingFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         try {
-            if (null == headers || headers.isEmpty() || headers.stream().allMatch(String::isBlank)) {
+            if (headers == null || headers.stream().noneMatch(StringUtils::hasText)) {
                 log.warn("No headers configured for logging. Skipping header logging.");
             } else {
                 log.trace("Adding headers to MDC: {}", headers);
-                for (String header : headers) {
-                    String value = request.getHeader(header);
-                    if (StringUtils.hasText(value)) {
-                        MDC.put(header, value);
-                    }
-                }
+                headers.stream()
+                        .filter(StringUtils::hasText)
+                        .forEach(header -> {
+                            var value = request.getHeader(header);
+                            if (StringUtils.hasText(value)) {
+                                MDC.put(header, value);
+                            } else {
+                                log.debug("Header '{}' is not present in the request.", header);
+                            }
+                        });
             }
 
             filterChain.doFilter(request, response);
         } finally {
             log.trace("Removing headers from MDC: {}", headers);
-            for (String header : headers) {
-                MDC.remove(header);
-            }
+            headers.stream()
+                    .filter(StringUtils::hasText)
+                    .forEach(MDC::remove);
         }
     }
 

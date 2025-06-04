@@ -7,24 +7,25 @@ This document proposes an improved architecture for the Output Management System
 
 ## 2. Core Architecture Components
 
-| Component              | Responsibility                                                                                                                         |
-|------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| Oracle API Gateway     | Entry point for all client requests; provides additional security, throttling, and monitoring before forwarding to API Gateway (Nginx) |
-| API Gateway            | Nginx Ingress for routing; forwards requests to Service after authentication                                                           |
-| Security Service       | Validates JWT; only authenticated requests reach backend services                                                                      |
-| Reference Data API     | Centralized access to reference data (allowed sources, enrichment etc.), uses Redis for caching                                        |
-| Thunderhead API        | SOAP API (via Oracle API Gateway REST-to-SOAP) for submitting documents, retrieving status, and error details                          |
-| OMS Database           | Central storage for requests, statuses, reference data, error tracking etc.                                                            |
-| OMS Services           | Core services that orchestrate the request flow, manage processing, and track status                                                   |
-| Kafka Event Hub        | Publishes final status updates                                                                                                         |
+| Component                | Responsibility                                                                                                                         |
+|--------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| Oracle API Gateway       | Entry point for all client requests; provides additional security, throttling, and monitoring before forwarding to API Gateway (Nginx) |
+| Nginx Ingress Controller | Nginx Ingress for routing; forwards requests to Service after authentication                                                           |
+| Security Service         | Validates JWT; only authenticated requests reach backend services                                                                      |
+| Reference Data API       | Centralized access to reference data (allowed sources, enrichment etc.), uses Redis for caching                                        |
+| Redis Cache              | Caches reference data for fast access and reduced DB load                                                                              |
+| Thunderhead API          | SOAP API (via Oracle API Gateway REST-to-SOAP) for submitting documents, retrieving status, and error details                          |
+| OMS Database             | Central storage for requests, statuses, errors, reference data, and batch details                                                      |
+| OMS Services             | Core services that orchestrate the request flow, manage processing, and track status; interact with all components                     |
+| Kafka Event Hub          | Publishes final status updates and supports event streaming for orchestration                                                          |
 
 - **Oracle API Gateway:**
   - Entry point for all client requests.
   - Provides additional security, including authentication and authorization, as well as throttling and monitoring.
-  - Forwards requests to the internal API Gateway (Nginx) after enforcing security policies.
+  - Forwards requests to the Nginx Ingress Controller after enforcing security policies.
 
-- **API Gateway:**
-  - Nginx Ingress Controller responsible for routing requests to backend OMS services.
+- **Nginx Ingress Controller:**
+  - Responsible for routing requests to backend OMS services.
   - Forwards requests to services only after successful authentication by the Security Service.
   - Centralizes API routing and load balancing for OMS microservices.
 
@@ -43,6 +44,10 @@ This document proposes an improved architecture for the Output Management System
   - Ensures cache consistency by updating or invalidating Redis entries on data changes.
   - Reduces database load and improves response times for frequently accessed reference data.
 
+- **Redis Cache:**
+  - Used by Reference Data API to cache frequently accessed reference data.
+  - Reduces latency and offloads repeated queries from the OMS Database.
+
 - **Thunderhead API:**
   - SOAP-based API provided by SmartComm Thunderhead.
   - Offers endpoints for submitting documents, retrieving document status, fetching error details, and other document management operations.
@@ -51,7 +56,8 @@ This document proposes an improved architecture for the Output Management System
   - Simplifies integration for OMS services and leverages the security and management features of the Oracle API Gateway.
 
 - **OMS Database:**
-  - Serves as the central storage for all OMS-related data, including document requests, statuses, reference data, and error tracking.
+  - Serves as the central storage for all OMS-related data, including document requests, statuses, errors, reference data, and batch details.
+  - Stores and updates requests, statuses, and errors as separate entities for clarity and traceability.
 
 - **OMS Services:**
   - Core set of microservices responsible for orchestrating the document request flow, managing processing, and tracking status.
@@ -59,6 +65,8 @@ This document proposes an improved architecture for the Output Management System
   - Interact with external systems (e.g., Thunderhead API, Reference Data API) and internal components (OMS Database, Kafka Event Hub).
   - Designed for modularity and scalability, allowing independent deployment and scaling of individual services.
   - Expose APIs or background jobs as needed for orchestration and integration with other OMS components.
+  - Store and update requests, statuses, and errors in the OMS Database.
+  - Publish final status updates to Kafka Event Hub.
   - The specific OMS Services and their roles are explained in detail within each solution variant's documentation.
 
 - **Kafka Event Hub:**
@@ -69,9 +77,9 @@ This document proposes an improved architecture for the Output Management System
 ---
 
 ## 3. Solution Variants for OMS Service Orchestration
-- [API Orchestration Solution](./README-api-solution.md): Uses REST APIs for asynchronous orchestration between services.
-- [Kafka Event-Driven Solution](./README-kafka-solution.md): Uses Kafka Event Hub for asynchronous, event-driven communication between services.
-- [Scheduled Jobs Solution](./README-scheduled-jobs-solution.md): Uses scheduled jobs for background processing and status tracking, with no inter-service APIs.
+- [API Orchestration Solution](README-api-solution.md): Uses REST APIs for asynchronous orchestration between services.
+- [Kafka Event-Driven Solution](README-kafka-solution.md): Uses Kafka Event Hub for asynchronous, event-driven communication between services.
+- [Scheduled Jobs Solution](README-scheduled-jobs-solution.md): Uses scheduled jobs for background processing and status tracking, with no inter-service APIs.
 
 Each solution document describes its unique orchestration, error handling, and pros/cons in detail.
 

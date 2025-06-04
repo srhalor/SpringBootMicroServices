@@ -10,10 +10,10 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 import static com.fmd.spring_jpa_demo.util.SanitizerUtil.sanitizeJson;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * HttpServletRequestWrapper that replaces the request body with a sanitized version.
@@ -40,7 +40,7 @@ public class SanitizedRequestWrapper extends HttpServletRequestWrapper {
     public SanitizedRequestWrapper(HttpServletRequest request) throws IOException {
         super(request);
         // Read the request body as a string
-        String body = new BufferedReader(new InputStreamReader(request.getInputStream(), StandardCharsets.UTF_8))
+        String body = new BufferedReader(new InputStreamReader(request.getInputStream(), UTF_8))
                 .lines().collect(Collectors.joining("\n"));
         // Sanitize all string fields in the JSON body
         this.sanitizedBody = sanitizeJson(body);
@@ -57,7 +57,7 @@ public class SanitizedRequestWrapper extends HttpServletRequestWrapper {
     @Override
     public ServletInputStream getInputStream() {
         // Provide the sanitized body as a byte stream
-        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(sanitizedBody.getBytes(StandardCharsets.UTF_8));
+        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(sanitizedBody.getBytes(UTF_8));
         return new ServletInputStream() {
             @Override
             public int read() {
@@ -94,6 +94,6 @@ public class SanitizedRequestWrapper extends HttpServletRequestWrapper {
     @Override
     public BufferedReader getReader() {
         // Provide the sanitized body as a character stream
-        return new BufferedReader(new InputStreamReader(getInputStream(), StandardCharsets.UTF_8));
+        return new BufferedReader(new InputStreamReader(getInputStream(), UTF_8));
     }
 }

@@ -14,6 +14,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 /**
  * Filter that intercepts incoming HTTP requests with JSON bodies, recursively sanitizes all string values,
  * and passes the sanitized request to the rest of the filter chain. Non-JSON requests are passed through unchanged.
@@ -28,6 +30,7 @@ import java.io.IOException;
 @Order
 @ConditionalOnProperty(prefix = "request.body.sanitization", name = "enabled", havingValue = "true")
 public class RequestBodySanitizationFilter extends OncePerRequestFilter {
+
 
     /**
      * Filters incoming requests, sanitizing JSON request bodies if present.
@@ -50,7 +53,7 @@ public class RequestBodySanitizationFilter extends OncePerRequestFilter {
 
         var contentType = request.getContentType();
         // Use Spring's StringUtils for null/empty check and case-insensitive contains
-        if (StringUtils.hasText(contentType) && contentType.toLowerCase().contains("application/json")) {
+        if (StringUtils.hasText(contentType) && contentType.toLowerCase().contains(APPLICATION_JSON_VALUE)) {
             log.trace("JSON request detected. Wrapping and sanitizing request body.");
             // Wrap and sanitize the request body
             var sanitizedRequest = new SanitizedRequestWrapper(request);

@@ -3,12 +3,14 @@ package com.fmd.spring_jpa_demo.security;
 import com.fmd.spring_jpa_demo.exception.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+
+import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 /**
  * Custom AccessDeniedHandler to return a JSON response on access denied.
@@ -33,12 +35,15 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
      * @throws IOException if an input or output exception occurs
      */
     @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException)
+    public void handle(HttpServletRequest request,
+                       HttpServletResponse response,
+                       AccessDeniedException accessDeniedException)
             throws IOException {
-        ApiError apiError = new ApiError(HttpStatus.FORBIDDEN,
+
+        ApiError apiError = new ApiError(FORBIDDEN,
                 "Access Denied: " + accessDeniedException.getMessage(),
                 request.getRequestURI());
-        ErrorResponseUtil.writeErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, apiError);
+        ErrorResponseUtil.writeErrorResponse(response, SC_FORBIDDEN, apiError);
     }
 }
 

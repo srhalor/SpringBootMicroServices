@@ -2,7 +2,6 @@ package com.fmd.spring_jpa_demo.exception;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
@@ -13,6 +12,8 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.springframework.http.HttpStatus.*;
 
 /**
  * Global exception handler for REST controllers.
@@ -33,8 +34,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ApiError> handleEntityNotFound(EntityNotFoundException ex, WebRequest request) {
         log.warn("Entity not found: {} | Path: {}", ex.getMessage(), request.getDescription(false));
-        ApiError error = new ApiError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getDescription(false));
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        ApiError error = new ApiError(NOT_FOUND, ex.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(error, NOT_FOUND);
     }
 
     /**
@@ -52,8 +53,8 @@ public class GlobalExceptionHandler {
         }
         String message = "Validation failed: " + errors;
         log.warn("Validation error: {} | Path: {}", message, request.getDescription(false));
-        ApiError error = new ApiError(HttpStatus.BAD_REQUEST, message, request.getDescription(false));
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        ApiError error = new ApiError(BAD_REQUEST, message, request.getDescription(false));
+        return new ResponseEntity<>(error, BAD_REQUEST);
     }
 
     /**
@@ -66,8 +67,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(StudentNotFoundException.class)
     public ResponseEntity<ApiError> handleStudentNotFound(StudentNotFoundException ex, WebRequest request) {
         log.warn("Student not found: {} | Path: {}", ex.getMessage(), request.getDescription(false));
-        ApiError error = new ApiError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getDescription(false));
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        ApiError error = new ApiError(NOT_FOUND, ex.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(error, NOT_FOUND);
     }
 
     /**
@@ -80,8 +81,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ApiError> handleAuthorizationDeniedException(AuthorizationDeniedException ex, WebRequest request) {
         log.warn("Access denied: {} | Path: {}", ex.getMessage(), request.getDescription(false));
-        ApiError error = new ApiError(HttpStatus.FORBIDDEN, "Access Denied: " + ex.getMessage(), request.getDescription(false));
-        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+        ApiError error = new ApiError(FORBIDDEN, "Access Denied: " + ex.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(error, FORBIDDEN);
     }
 
     /**
@@ -94,7 +95,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGenericException(Exception ex, WebRequest request) {
         log.error("Unhandled exception: {} | Path: {}", ex.getMessage(), request.getDescription(false), ex);
-        ApiError error = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request.getDescription(false));
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        ApiError error = new ApiError(INTERNAL_SERVER_ERROR, ex.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(error, INTERNAL_SERVER_ERROR);
     }
 }

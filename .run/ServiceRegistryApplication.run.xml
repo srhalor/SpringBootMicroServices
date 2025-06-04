@@ -1,0 +1,18 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ServiceRegistryApplication" type="Application" factoryName="Application" nameIsGenerated="true">
+    <option name="envFilePaths">
+      <option value="$PROJECT_DIR$/service-registry/.env" />
+    </option>
+    <option name="MAIN_CLASS_NAME" value="com.fmd.service_registry.ServiceRegistryApplication" />
+    <module name="service-registry" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="com.fmd.service_registry.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
